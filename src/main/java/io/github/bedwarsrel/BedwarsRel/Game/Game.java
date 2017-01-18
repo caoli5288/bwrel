@@ -1511,14 +1511,8 @@ public class Game {
     public List<Player> getNonVipPlayers() {
         List<Player> players = this.getPlayers();
 
-        Iterator<Player> playerIterator = players.iterator();
-        while (playerIterator.hasNext()) {
-            Player player = playerIterator.next();
-            if (player.hasPermission("bw.vip.joinfull") || player.hasPermission("bw.vip.forcestart")
-                    || player.hasPermission("bw.vip")) {
-                playerIterator.remove();
-            }
-        }
+        players.removeIf(player -> player.hasPermission("bw.vip.joinfull") || player.hasPermission("bw.vip.forcestart")
+                || player.hasPermission("bw.vip"));
 
         return players;
     }

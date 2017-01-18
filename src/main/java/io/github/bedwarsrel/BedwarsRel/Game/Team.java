@@ -46,7 +46,7 @@ public class Team implements ConfigurationSerializable {
         this.setMaxPlayers(Integer.parseInt(deserialize.get("maxplayers").toString()));
         this.setColor(TeamColor.valueOf(deserialize.get("color").toString().toUpperCase()));
         this.setSpawnLocation(Utils.locationDeserialize(deserialize.get("spawn")));
-        this.setChests(new ArrayList<Block>());
+        this.setChests(new ArrayList<>());
 
         if (deserialize.containsKey("bedhead")) {
             this.setTargetHeadBlock(Utils.locationDeserialize(deserialize.get("bedhead")));

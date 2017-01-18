@@ -9,13 +9,13 @@ import io.github.bedwarsrel.BedwarsRel.Shop.Specials.SpecialItem;
 import io.github.bedwarsrel.BedwarsRel.Statistics.PlayerStatistic;
 import io.github.bedwarsrel.BedwarsRel.Timing;
 import io.github.bedwarsrel.BedwarsRel.Utils;
+import lombok.Setter;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerRespawnEvent;
 
 import java.lang.reflect.Method;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -24,10 +24,12 @@ import java.util.Map;
 
 public abstract class GameCycle {
 
-    private Game game = null;
-    private boolean endGameRunning = false;
+    private Game game;
 
-    public GameCycle(Game game) {
+    @Setter
+    private boolean endGameRunning;
+
+    GameCycle(Game game) {
         this.game = game;
     }
 
@@ -134,7 +136,7 @@ public abstract class GameCycle {
                 || (Main.getInstance().getBooleanConfig("titles.win.enabled", true)
                 && (!"".equals(title) || !"".equals(subtitle)))) {
             if (winner != null) {
-                for (Player player : winner.getPlayers()) {
+                for (Player player : winner.getEnsure()) {
                     if (Main.getInstance().getBooleanConfig("titles.win.enabled", true)
                             && (!"".equals(title) || !"".equals(subtitle))) {
                         try {
@@ -174,9 +176,9 @@ public abstract class GameCycle {
                     }
 
                     if (Main.getInstance().getBooleanConfig("rewards.enabled", false)) {
-                        List<String> commands = new ArrayList<String>();
-                        commands = (List<String>) Main.getInstance().getConfig().getList("rewards.player-win");
-                        Main.getInstance().dispatchRewardCommands(commands, this.getRewardPlaceholders(player));
+                        List<String> list;
+                        list = Main.getInstance().getConfig().getStringList("rewards.player-win");
+                        Main.getInstance().dispatchRewardCommands(list, this.getRewardPlaceholders(player));
                     }
 
                     if (Main.getInstance().statisticsEnabled()) {
@@ -193,28 +195,26 @@ public abstract class GameCycle {
                 }
             }
 
-            for (Player player : this.game.getPlayers()) {
-                if (this.game.spectator(player)) {
-                    continue;
-                }
-
-                if (Main.getInstance().getBooleanConfig("rewards.enabled", false)) {
-                    List<String> commands = new ArrayList<String>();
-                    commands =
-                            (List<String>) Main.getInstance().getConfig().getList("rewards.player-end-game");
-                    Main.getInstance().dispatchRewardCommands(commands, this.getRewardPlaceholders(player));
+            if (Main.getInstance().getBooleanConfig("rewards.enabled", false)) {
+                List<String> list;
+                list = Main.getInstance().getConfig().getStringList("rewards.player-end-game");
+                for (Team t : game.getTeams().values()) {
+                    for (Player player : t.getEnsure()) {
+                        Main.getInstance().dispatchRewardCommands(list, this.getRewardPlaceholders(player));
+                    }
                 }
             }
+
         }
 
-        this.getGame().getPlayingTeams().clear();
+        getGame().getPlayingTeams().clear();
 
         GameOverTask gameOver = new GameOverTask(this, delay, winner);
         gameOver.runTaskTimer(Main.getInstance(), 0L, 20L);
     }
 
     private Map<String, String> getRewardPlaceholders(Player player) {
-        Map<String, String> placeholders = new HashMap<String, String>();
+        Map<String, String> placeholders = new HashMap<>();
 
         placeholders.put("{player}", player.getName());
         if (Main.getInstance().statisticsEnabled()) {
@@ -318,8 +318,8 @@ public abstract class GameCycle {
                 new BedwarsPlayerKilledEvent(this.getGame(), player, killer);
         Main.getInstance().getServer().getPluginManager().callEvent(killedEvent);
 
-        PlayerStatistic diePlayer = null;
-        PlayerStatistic killerPlayer = null;
+        PlayerStatistic die;
+        PlayerStatistic kil;
 
         Iterator<SpecialItem> itemIterator = this.game.getSpecialItems().iterator();
         while (itemIterator.hasNext()) {
@@ -336,23 +336,23 @@ public abstract class GameCycle {
 
         Team deathTeam = this.getGame().getPlayerTeam(player);
         if (Main.getInstance().statisticsEnabled()) {
-            diePlayer = Main.getInstance().getPlayerStatisticManager().getStatistic(player);
+            die = Main.getInstance().getPlayerStatisticManager().getStatistic(player);
 
             boolean onlyOnBedDestroy =
                     Main.getInstance().getBooleanConfig("statistics.bed-destroyed-kills", false);
             boolean teamIsDead = deathTeam.isDead(this.getGame());
 
             if (!onlyOnBedDestroy || teamIsDead) {
-                diePlayer.setDeaths(diePlayer.getDeaths() + 1);
-                diePlayer.addCurrentScore(Main.getInstance().getIntConfig("statistics.scores.die", 0));
+                die.setDeaths(die.getDeaths() + 1);
+                die.addCurrentScore(Main.getInstance().getIntConfig("statistics.scores.die", 0));
             }
 
             if (killer != null) {
                 if (!onlyOnBedDestroy || teamIsDead) {
-                    killerPlayer = Main.getInstance().getPlayerStatisticManager().getStatistic(killer);
-                    if (killerPlayer != null) {
-                        killerPlayer.setKills(killerPlayer.getKills() + 1);
-                        killerPlayer
+                    kil = Main.getInstance().getPlayerStatisticManager().getStatistic(killer);
+                    if (kil != null) {
+                        kil.setKills(kil.getKills() + 1);
+                        kil
                                 .addCurrentScore(Main.getInstance().getIntConfig("statistics.scores.kill", 10));
                     }
                 }
@@ -386,7 +386,7 @@ public abstract class GameCycle {
             return;
         }
 
-        StringBuffer heal = new StringBuffer();
+        StringBuilder heal = new StringBuilder();
         double health = killer.getHealth() / killer.getMaxHealth() * killer.getHealthScale() / 2;
         DecimalFormat format = new DecimalFormat("#.#");
 
@@ -396,12 +396,10 @@ public abstract class GameCycle {
             heal.append(format.format(health)).append(ChatColor.GOLD).append("]");
         }
 
-        Main.execute(() -> {
-            getGame().broadcast(ChatColor.GOLD + Main.local("ingame.player.killed",
-                    ImmutableMap.of("killer", Game.getPlayerWithTeamString(killer, killerTeam, ChatColor.GOLD, heal.toString()),
-                            "player", Game.getPlayerWithTeamString(player, deathTeam, ChatColor.GOLD))));
-            sendTeamDeadMessage(deathTeam);
-        });
+        getGame().broadcast(ChatColor.GOLD + Main.local("ingame.player.killed",
+                ImmutableMap.of("killer", Game.getPlayerWithTeamString(killer, killerTeam, ChatColor.GOLD, heal.toString()),
+                        "player", Game.getPlayerWithTeamString(player, deathTeam, ChatColor.GOLD))));
+        sendTeamDeadMessage(deathTeam);
 
         checkGameOver();
     }
@@ -411,10 +409,6 @@ public abstract class GameCycle {
             getGame().broadcast(ChatColor.RED + Main.local("ingame.team-dead", ImmutableMap.of("team",
                     deathTeam.getChatColor() + deathTeam.getDisplayName() + ChatColor.RED)));
         }
-    }
-
-    public void setEndGameRunning(boolean running) {
-        this.endGameRunning = running;
     }
 
     public boolean isEndGameRunning() {
