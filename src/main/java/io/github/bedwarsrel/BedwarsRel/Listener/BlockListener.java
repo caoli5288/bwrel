@@ -196,7 +196,7 @@ public class BlockListener extends BaseListener {
             return;
         }
 
-        if (g.isSpectator(p)) {
+        if (g.spectator(p)) {
             e.setCancelled(true);
             return;
         }
@@ -347,7 +347,7 @@ public class BlockListener extends BaseListener {
         }
 
         if (game.getState() == GameState.RUNNING) {
-            if (game.isSpectator(player)) {
+            if (game.spectator(player)) {
                 bpe.setCancelled(true);
                 bpe.setBuild(false);
                 return;

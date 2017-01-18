@@ -37,7 +37,7 @@ public class BungeeGameCycle extends GameCycle {
 
     private void kickAll() {
         for (Player player : this.getGame().getTeamPlayers()) {
-            for (Player freePlayer : this.getGame().getFreePlayers()) {
+            for (Player freePlayer : this.getGame().getFree()) {
                 player.showPlayer(freePlayer);
             }
             this.getGame().playerLeave(player, false);
@@ -213,7 +213,7 @@ public class BungeeGameCycle extends GameCycle {
             final ArrayList<Player> players = new ArrayList<Player>();
             final Game game = this.getGame();
             players.addAll(this.getGame().getTeamPlayers());
-            players.addAll(this.getGame().getFreePlayers());
+            players.addAll(this.getGame().getFree());
             for (Player player : players) {
 
                 if (!player.getWorld().equals(this.getGame().getLobby().getWorld())) {

@@ -194,7 +194,7 @@ public abstract class GameCycle {
             }
 
             for (Player player : this.game.getPlayers()) {
-                if (this.game.isSpectator(player)) {
+                if (this.game.spectator(player)) {
                     continue;
                 }
 
@@ -249,7 +249,7 @@ public abstract class GameCycle {
 
         getGame().setPlayerDamager(player, null);
 
-        if (getGame().isSpectator(player)) {
+        if (getGame().spectator(player)) {
             Collection<Team> r = getGame().getTeams().values();
             event.setRespawnLocation(
                     ((Team) r.toArray()[Utils.randInt(0, r.size() - 1)]).getSpawnLocation());

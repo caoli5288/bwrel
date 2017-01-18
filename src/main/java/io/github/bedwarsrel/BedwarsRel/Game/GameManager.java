@@ -31,9 +31,14 @@ public class GameManager {
 
     private INick nick;
 
-    public GameManager() {
-        this.games = new ArrayList<Game>();
-        this.gamePlayer = new HashMap<Player, Game>();
+    public static final class Hold {
+
+        public static final GameManager MANAGER = new GameManager();
+    }
+
+    private GameManager() {
+        games = new ArrayList<>();
+        gamePlayer = new HashMap<>();
     }
 
     public void setNick(INick nick) {
@@ -48,9 +53,7 @@ public class GameManager {
     }
 
     public static Game getGameBy(Player p) {
-        GameManager i = Main.getInstance().getGameManager();
-        if ($.nil(i)) return null;
-        return i.gamePlayer.get(p);
+        return Hold.MANAGER.gamePlayer.get(p);
     }
 
     public Game addGame(String name) {
@@ -311,7 +314,7 @@ public class GameManager {
                 }
             }
 
-            game.getFreePlayers().clear();
+            game.getFree().clear();
             game.updateSigns();
 
             this.games.add(game);
@@ -398,6 +401,11 @@ public class GameManager {
 
     public static void reload() {
         Main.getInstance().getGameManager().reloadGames();
+    }
+
+    public static boolean spectator(Player p) {
+        Game game = getGameBy(p);
+        return $.nil(game) || game.spectator(p);
     }
 
 }

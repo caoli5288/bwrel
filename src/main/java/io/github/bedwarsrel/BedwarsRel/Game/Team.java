@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.stream.Collectors.toList;
+
 @Data
 @SerializableAs("Team")
 public class Team implements ConfigurationSerializable {
@@ -62,7 +64,7 @@ public class Team implements ConfigurationSerializable {
         this.setColor(color);
         this.setMaxPlayers(maxPlayers);
         this.setScoreboardTeam(scoreboardTeam);
-        this.setChests(new ArrayList<Block>());
+        this.setChests(new ArrayList<>());
     }
 
     public void addChest(Block chestBlock) {
@@ -173,15 +175,14 @@ public class Team implements ConfigurationSerializable {
         if ($.nil(ensure)) {
             return getAllRT();
         }
-        return ensure;
+        return ensure.stream().filter(p -> !GameManager.spectator(p)).collect(toList());
     }
 
     private List<Player> getAllRT() {
         List<Player> list = new ArrayList<>();
         for (OfflinePlayer offlinePlayer : this.getScoreboardTeam().getPlayers()) {
             Player player = Main.getInstance().getServer().getPlayer(offlinePlayer.getName());
-            if (player != null && GameManager.getGameBy(player) != null
-                    && !GameManager.getGameBy(player).isSpectator(player)) {
+            if (!($.nil(player) || GameManager.spectator(player))) {
                 list.add(player);
             }
         }

@@ -25,7 +25,7 @@ public class TrackerListener implements Listener {
             return;
         }
 
-        if (game.isSpectator(player)) {
+        if (game.spectator(player)) {
             return;
         }
 

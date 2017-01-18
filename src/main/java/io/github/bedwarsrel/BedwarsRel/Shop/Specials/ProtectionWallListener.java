@@ -40,7 +40,7 @@ public class ProtectionWallListener implements Listener {
             return;
         }
 
-        if (game.isSpectator(interact.getPlayer())) {
+        if (game.spectator(interact.getPlayer())) {
             return;
         }
 

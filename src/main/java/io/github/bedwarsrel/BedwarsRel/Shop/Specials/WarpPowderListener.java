@@ -153,7 +153,7 @@ public class WarpPowderListener implements Listener {
             return;
         }
 
-        if (game.isSpectator(player)) {
+        if (game.spectator(player)) {
             return;
         }
 

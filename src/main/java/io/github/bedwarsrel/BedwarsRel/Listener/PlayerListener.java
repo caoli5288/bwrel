@@ -190,7 +190,7 @@ public class PlayerListener extends BaseListener {
 
         iee.setCancelled(true);
 
-        if (game.isSpectator(player)) {
+        if (game.spectator(player)) {
             return;
         }
 
@@ -243,7 +243,7 @@ public class PlayerListener extends BaseListener {
             return;
         }
 
-        if (game.isSpectator(player)) {
+        if (game.spectator(player)) {
             if (ioe.getInventory().getName().equals(Main.local("ingame.spectator"))) {
                 return;
             }
@@ -363,7 +363,7 @@ public class PlayerListener extends BaseListener {
     @SuppressWarnings({"rawtypes", "unchecked"})
     private void onIngameInventoryClick(InventoryClickEvent ice, Player player, Game game) {
         if (!ice.getInventory().getName().equals(Main.local("ingame.shop.name"))) {
-            if (game.isSpectator(player)
+            if (game.spectator(player)
                     || (game.getCycle() instanceof BungeeGameCycle && game.getCycle().isEndGameRunning()
                     && Main.getInstance().getBooleanConfig("bungeecord.endgame-in-lobby", true))) {
 
@@ -494,7 +494,7 @@ public class PlayerListener extends BaseListener {
 
         Team team = game.getPlayerTeam(player);
         String message = ce.getMessage();
-        boolean isSpectator = game.isSpectator(player);
+        boolean isSpectator = game.spectator(player);
 
         if (Main.getInstance().getBooleanConfig("overwrite-names", false)) {
             if (team == null) {
@@ -593,9 +593,9 @@ public class PlayerListener extends BaseListener {
                         continue;
                     }
 
-                    if (isSpectator && !game.isSpectator(recipient)) {
+                    if (isSpectator && !game.spectator(recipient)) {
                         recipiens.remove();
-                    } else if (!isSpectator && game.isSpectator(recipient)) {
+                    } else if (!isSpectator && game.spectator(recipient)) {
                         recipiens.remove();
                     }
                 }
@@ -723,7 +723,7 @@ public class PlayerListener extends BaseListener {
             return;
         }
 
-        if (g.getState() == GameState.RUNNING && g.isSpectator(p)) {
+        if (g.getState() == GameState.RUNNING && g.spectator(p)) {
             tfe.setCancelled(false);
             return;
         }
@@ -749,7 +749,7 @@ public class PlayerListener extends BaseListener {
         }
 
         if (game.getState() == GameState.RUNNING) {
-            if (game.isSpectator(player) || game.getCycle().isEndGameRunning()) {
+            if (game.spectator(player) || game.getCycle().isEndGameRunning()) {
                 flce.setCancelled(true);
                 return;
             }
@@ -813,7 +813,7 @@ public class PlayerListener extends BaseListener {
                 return;
             }
 
-            if (clickedBlock != null && clickedBlock.getType() == Material.LEVER && !g.isSpectator(player)
+            if (clickedBlock != null && clickedBlock.getType() == Material.LEVER && !g.spectator(player)
                     && pie.getAction() == Action.RIGHT_CLICK_BLOCK) {
                 if (!g.getRegion().isPlacedUnbreakableBlock(clickedBlock)) {
                     g.getRegion().addPlacedUnbreakableBlock(clickedBlock, clickedBlock.getState());
@@ -821,7 +821,7 @@ public class PlayerListener extends BaseListener {
                 return;
             }
 
-            if (g.isSpectator(player)
+            if (g.spectator(player)
                     || (g.getCycle() instanceof BungeeGameCycle && g.getCycle().isEndGameRunning()
                     && Main.getInstance().getBooleanConfig("bungeecord.endgame-in-lobby", true))) {
                 if (interactingMaterial == Material.SLIME_BALL) {
@@ -842,7 +842,7 @@ public class PlayerListener extends BaseListener {
                     GameMode.valueOf("SPECTATOR");
                 } catch (Exception ex) {
                     Main.getInstance().getBugsnag().notify(ex);
-                    for (Player p : g.getFreePlayers()) {
+                    for (Player p : g.getFree()) {
                         if (!g.getRegion().isInRegion(p.getLocation())) {
                             continue;
                         }
@@ -862,7 +862,7 @@ public class PlayerListener extends BaseListener {
             }
 
             if (clickedBlock != null && clickedBlock.getType() == Material.ENDER_CHEST
-                    && !g.isSpectator(player)) {
+                    && !g.spectator(player)) {
                 pie.setCancelled(true);
 
                 Block chest = pie.getClickedBlock();
@@ -991,7 +991,7 @@ public class PlayerListener extends BaseListener {
         }
 
         if (g.getState() != GameState.WAITING) {
-            if (g.isSpectator(p)) {
+            if (g.spectator(p)) {
                 die.setCancelled(true);
             }
 
@@ -1062,7 +1062,7 @@ public class PlayerListener extends BaseListener {
         }
 
         if (g.getState() == GameState.RUNNING) {
-            if (g.isSpectator(p)) {
+            if (g.spectator(p)) {
                 ede.setCancelled(true);
                 return;
             }
@@ -1084,7 +1084,7 @@ public class PlayerListener extends BaseListener {
 
                 if (edbee.getDamager() instanceof Player) {
                     Player damager = (Player) edbee.getDamager();
-                    if (g.isSpectator(damager)) {
+                    if (g.spectator(damager)) {
                         ede.setCancelled(true);
                         return;
                     }
@@ -1094,7 +1094,7 @@ public class PlayerListener extends BaseListener {
                     Arrow arrow = (Arrow) edbee.getDamager();
                     if (arrow.getShooter() instanceof Player) {
                         Player shooter = (Player) arrow.getShooter();
-                        if (g.isSpectator(shooter)) {
+                        if (g.spectator(shooter)) {
                             ede.setCancelled(true);
                             return;
                         }

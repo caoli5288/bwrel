@@ -161,7 +161,7 @@ public class Main extends JavaPlugin {
         this.registerCommands();
         this.registerListener();
 
-        this.gameManager = new GameManager();
+        this.gameManager = GameManager.Hold.MANAGER;
 
         // bungeecord
         if (Main.getInstance().isBungee()) {

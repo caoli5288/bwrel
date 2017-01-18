@@ -63,7 +63,7 @@ public class TNTSheepListener implements Listener {
             return;
         }
 
-        if (game.isSpectator(player)) {
+        if (game.spectator(player)) {
             return;
         }
 
@@ -153,7 +153,7 @@ public class TNTSheepListener implements Listener {
             return;
         }
 
-        if (game.isSpectator(damagerPlayer) || game.isSpectator(player)) {
+        if (game.spectator(damagerPlayer) || game.spectator(player)) {
             event.setCancelled(true);
             return;
         }

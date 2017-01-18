@@ -69,7 +69,7 @@ public class Game {
     private GameState state = null;
     private HashMap<String, Team> teams = null;
     private List<Team> playingTeams = null;
-    private List<Player> freePlayers = null;
+    private List<Player> free = null;
     private int minPlayers = 0;
     private Region region = null;
     private Location lobby = null;
@@ -124,7 +124,7 @@ public class Game {
         this.name = name;
         this.runningTasks = new ArrayList<BukkitTask>();
 
-        this.freePlayers = new ArrayList<Player>();
+        this.free = new ArrayList<Player>();
         this.ressourceSpawners = new ArrayList<RessourceSpawner>();
         this.teams = new HashMap<String, Team>();
         this.playingTeams = new ArrayList<Team>();
@@ -341,7 +341,7 @@ public class Game {
             }
         }
 
-        return this.freePlayers.contains(p);
+        return this.free.contains(p);
     }
 
     public void addRessourceSpawner(RessourceSpawner rs) {
@@ -477,8 +477,8 @@ public class Game {
     public void toSpectator(Player player) {
         final Player p = player;
 
-        if (!this.freePlayers.contains(player)) {
-            this.freePlayers.add(player);
+        if (!this.free.contains(player)) {
+            this.free.add(player);
         }
 
         PlayerStorage storage = this.getPlayerStorage(player);
@@ -545,7 +545,7 @@ public class Game {
     }
 
     public Location getPlayerTeleportLocation(Player player) {
-        if (this.isSpectator(player)
+        if (this.spectator(player)
                 && !(this.getCycle() instanceof BungeeGameCycle && this.getCycle().isEndGameRunning()
                 && Main.getInstance().getBooleanConfig("bungeecord.endgame-in-lobby", true))) {
             return ((Team) this.teams.values().toArray()[Utils.randInt(0, this.teams.size() - 1)])
@@ -562,7 +562,7 @@ public class Game {
     }
 
     public void setPlayerGameMode(Player player) {
-        if (this.isSpectator(player)
+        if (this.spectator(player)
                 && !(this.getCycle() instanceof BungeeGameCycle && this.getCycle().isEndGameRunning()
                 && Main.getInstance().getBooleanConfig("bungeecord.endgame-in-lobby", true))) {
 
@@ -591,7 +591,7 @@ public class Game {
         if (this.state == GameState.RUNNING
                 && !(this.getCycle() instanceof BungeeGameCycle && this.getCycle().isEndGameRunning()
                 && Main.getInstance().getBooleanConfig("bungeecord.endgame-in-lobby", true))) {
-            if (this.isSpectator(player)) {
+            if (this.spectator(player)) {
                 if (player.getGameMode().equals(GameMode.SURVIVAL)) {
                     for (Player playerInGame : players) {
                         playerInGame.hidePlayer(player);
@@ -602,7 +602,7 @@ public class Game {
                         teamPlayer.hidePlayer(player);
                         player.showPlayer(teamPlayer);
                     }
-                    for (Player freePlayer : this.getFreePlayers()) {
+                    for (Player freePlayer : this.getFree()) {
                         freePlayer.showPlayer(player);
                         player.showPlayer(freePlayer);
                     }
@@ -624,8 +624,8 @@ public class Game {
 
     }
 
-    public boolean isSpectator(Player player) {
-        return (this.getState() == GameState.RUNNING && this.freePlayers.contains(player));
+    public boolean spectator(Player player) {
+        return (this.getState() == GameState.RUNNING && free.contains(player));
     }
 
     public boolean playerJoins(final Player p) {
@@ -720,7 +720,7 @@ public class Game {
                     ImmutableMap.of("player", p.getDisplayName() + ChatColor.GREEN)));
 
             if (!this.isAutobalanceEnabled()) {
-                this.freePlayers.add(p);
+                this.free.add(p);
             } else {
                 Team team = this.getLowestTeam();
                 team.addPlayer(p);
@@ -769,7 +769,7 @@ public class Game {
             statistic = Main.getInstance().getPlayerStatisticManager().getStatistic(p);
         }
 
-        if (this.isSpectator(p)) {
+        if (this.spectator(p)) {
             if (!this.getCycle().isEndGameRunning()) {
                 for (Player player : this.getPlayers()) {
                     if (player.equals(p)) {
@@ -805,7 +805,7 @@ public class Game {
 
         this.playerDamages.remove(p);
         if (team != null && GameManager.getGameBy(p) != null
-                && !GameManager.getGameBy(p).isSpectator(p)) {
+                && !GameManager.getGameBy(p).spectator(p)) {
             team.removePlayer(p);
             if (kicked) {
                 this.broadcast(ChatColor.RED + Main.local("ingame.player.kicked", ImmutableMap.of("player",
@@ -818,8 +818,8 @@ public class Game {
 
         Main.getInstance().getGameManager().removePlayer(p);
 
-        if (this.freePlayers.contains(p)) {
-            this.freePlayers.remove(p);
+        if (this.free.contains(p)) {
+            this.free.remove(p);
         }
 
         if (Main.getInstance().isBungee()) {
@@ -1053,7 +1053,7 @@ public class Game {
     }
 
     public void openSpectatorCompass(Player player) {
-        if (!this.isSpectator(player)) {
+        if (!this.spectator(player)) {
             return;
         }
 
@@ -1078,8 +1078,8 @@ public class Game {
     }
 
     public void nonFreePlayer(Player p) {
-        if (this.freePlayers.contains(p)) {
-            this.freePlayers.remove(p);
+        if (this.free.contains(p)) {
+            this.free.remove(p);
         }
     }
 
@@ -1499,7 +1499,7 @@ public class Game {
     public ArrayList<Player> getPlayers() {
         ArrayList<Player> players = new ArrayList<>();
 
-        players.addAll(this.freePlayers);
+        players.addAll(this.free);
 
         for (Team team : this.teams.values()) {
             players.addAll(team.getPlayers());
@@ -1606,8 +1606,8 @@ public class Game {
 
     public List<Player> getFreePlayersClone() {
         List<Player> players = new ArrayList<Player>();
-        if (this.freePlayers.size() > 0) {
-            players.addAll(this.freePlayers);
+        if (this.free.size() > 0) {
+            players.addAll(this.free);
         }
 
         return players;
@@ -1827,12 +1827,12 @@ public class Game {
     }
 
     private void moveFreePlayersToTeam() {
-        for (Player player : this.freePlayers) {
+        for (Player player : this.free) {
             Team lowest = this.getLowestTeam();
             lowest.addPlayer(player);
         }
 
-        this.freePlayers = new ArrayList<Player>();
+        this.free = new ArrayList<Player>();
         this.updateScoreboard();
     }
 
@@ -1904,8 +1904,8 @@ public class Game {
             }
         }
 
-        return (teamsWithPlayers > 1 || (teamsWithPlayers == 1 && this.getFreePlayers().size() >= 1)
-                || (teamsWithPlayers == 0 && this.getFreePlayers().size() >= 2));
+        return (teamsWithPlayers > 1 || (teamsWithPlayers == 1 && this.getFree().size() >= 1)
+                || (teamsWithPlayers == 0 && this.getFree().size() >= 2));
     }
 
     public boolean hasEnoughPlayers() {

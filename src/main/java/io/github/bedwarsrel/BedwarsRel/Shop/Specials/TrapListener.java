@@ -41,7 +41,7 @@ public class TrapListener implements Listener {
             return;
         }
 
-        if (game.isSpectator(player)) {
+        if (game.spectator(player)) {
             return;
         }
 
@@ -51,7 +51,7 @@ public class TrapListener implements Listener {
         }
 
         Team team = game.getPlayerTeam(player);
-        if (team == null || game.isSpectator(player)) {
+        if (team == null || game.spectator(player)) {
             return;
         }
 

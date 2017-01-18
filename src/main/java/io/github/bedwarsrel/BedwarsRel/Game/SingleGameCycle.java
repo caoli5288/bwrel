@@ -34,7 +34,7 @@ public class SingleGameCycle extends GameCycle {
         }
 
         // and now the spectators
-        List<Player> freePlayers = new ArrayList<Player>(this.getGame().getFreePlayers());
+        List<Player> freePlayers = new ArrayList<Player>(this.getGame().getFree());
         for (Player p : freePlayers) {
             this.kickPlayer(p, true);
         }
@@ -67,7 +67,7 @@ public class SingleGameCycle extends GameCycle {
     }
 
     private void kickPlayer(Player player, boolean wasSpectator) {
-        for (Player freePlayer : this.getGame().getFreePlayers()) {
+        for (Player freePlayer : this.getGame().getFree()) {
             player.showPlayer(freePlayer);
         }
 
@@ -136,7 +136,7 @@ public class SingleGameCycle extends GameCycle {
         }
 
         if (this.getGame().getState() == GameState.RUNNING && !this.getGame().isStopping()
-                && !this.getGame().isSpectator(player)) {
+                && !this.getGame().spectator(player)) {
             this.checkGameOver();
         }
     }
