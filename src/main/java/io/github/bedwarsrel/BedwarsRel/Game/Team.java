@@ -160,7 +160,7 @@ public class Team implements ConfigurationSerializable {
         if (!$.nil(ensure)) {
             throw new IllegalStateException("ensure");
         }
-        ensure = getPlayers();
+        ensure = getAllRT();
     }
 
     public void removeEnsure(Player p) {
@@ -171,17 +171,21 @@ public class Team implements ConfigurationSerializable {
 
     public List<Player> getPlayers() {
         if ($.nil(ensure)) {
-            List<Player> list = new ArrayList<>();
-            for (OfflinePlayer offlinePlayer : this.getScoreboardTeam().getPlayers()) {
-                Player player = Main.getInstance().getServer().getPlayer(offlinePlayer.getName());
-                if (player != null && GameManager.getGameBy(player) != null
-                        && !GameManager.getGameBy(player).isSpectator(player)) {
-                    list.add(player);
-                }
-            }
-            return list;
+            return getAllRT();
         }
         return ensure;
+    }
+
+    private List<Player> getAllRT() {
+        List<Player> list = new ArrayList<>();
+        for (OfflinePlayer offlinePlayer : this.getScoreboardTeam().getPlayers()) {
+            Player player = Main.getInstance().getServer().getPlayer(offlinePlayer.getName());
+            if (player != null && GameManager.getGameBy(player) != null
+                    && !GameManager.getGameBy(player).isSpectator(player)) {
+                list.add(player);
+            }
+        }
+        return list;
     }
 
     public boolean isDead(Game game) {
