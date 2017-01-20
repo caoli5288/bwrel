@@ -59,6 +59,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static io.github.bedwarsrel.BedwarsRel.$.nil;
+
 @Data
 public class Game {
 
@@ -362,12 +364,19 @@ public class Game {
 
     public Team getPlayerTeam(Player p) {
         if (state != GameState.WAITING) {
-            return team.computeIfAbsent(p.getUniqueId(), k -> getTeamRT(p));
+            Team t = team.get(p.getUniqueId());
+            if (nil(t)) {
+                t = getPTeamRT(p);
+                if (!nil(t)) {
+                    team.put(p.getUniqueId(), t);
+                }
+                return t;
+            }
         }
-        return getTeamRT(p);
+        return getPTeamRT(p);
     }
 
-    private Team getTeamRT(Player p) {
+    private Team getPTeamRT(Player p) {
         for (Team team : getTeams().values()) {
             if (team.isInTeam(p)) {
                 return team;
