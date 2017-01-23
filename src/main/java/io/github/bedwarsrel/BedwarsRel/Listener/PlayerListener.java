@@ -762,17 +762,17 @@ public class PlayerListener extends BaseListener {
     }
 
     @EventHandler
-    public void onPlayerInteract(PlayerInteractEvent pie) {
-        Player player = pie.getPlayer();
+    public void onPlayerInteract(PlayerInteractEvent event) {
+        Player player = event.getPlayer();
         Game g = Main.getInstance().getGameManager().getGameOfPlayer(player);
 
         if (g == null) {
-            if (pie.getAction() != Action.RIGHT_CLICK_BLOCK
-                    && pie.getAction() != Action.RIGHT_CLICK_AIR) {
+            if (event.getAction() != Action.RIGHT_CLICK_BLOCK
+                    && event.getAction() != Action.RIGHT_CLICK_AIR) {
                 return;
             }
 
-            Block clicked = pie.getClickedBlock();
+            Block clicked = event.getClickedBlock();
 
             if (clicked == null) {
                 return;
@@ -797,24 +797,24 @@ public class PlayerListener extends BaseListener {
             return;
         }
 
-        Material interactingMaterial = pie.getMaterial();
-        Block clickedBlock = pie.getClickedBlock();
+        Material interactingMaterial = event.getMaterial();
+        Block clickedBlock = event.getClickedBlock();
 
         if (g.getState() == GameState.RUNNING) {
-            if (pie.getAction() == Action.PHYSICAL && clickedBlock != null
+            if (event.getAction() == Action.PHYSICAL && clickedBlock != null
                     && (clickedBlock.getType() == Material.WHEAT
                     || clickedBlock.getType() == Material.SOIL)) {
-                pie.setCancelled(true);
+                event.setCancelled(true);
                 return;
             }
 
-            if (pie.getAction() != Action.RIGHT_CLICK_BLOCK
-                    && pie.getAction() != Action.RIGHT_CLICK_AIR) {
+            if (event.getAction() != Action.RIGHT_CLICK_BLOCK
+                    && event.getAction() != Action.RIGHT_CLICK_AIR) {
                 return;
             }
 
             if (clickedBlock != null && clickedBlock.getType() == Material.LEVER && !g.spectator(player)
-                    && pie.getAction() == Action.RIGHT_CLICK_BLOCK) {
+                    && event.getAction() == Action.RIGHT_CLICK_BLOCK) {
                 if (!g.getRegion().isPlacedUnbreakableBlock(clickedBlock)) {
                     g.getRegion().addPlacedUnbreakableBlock(clickedBlock, clickedBlock.getState());
                 }
@@ -831,7 +831,7 @@ public class PlayerListener extends BaseListener {
 
                 if (interactingMaterial == Material.COMPASS) {
                     g.openSpectatorCompass(player);
-                    pie.setCancelled(true);
+                    event.setCancelled(true);
                     return;
                 }
             }
@@ -847,9 +847,9 @@ public class PlayerListener extends BaseListener {
                             continue;
                         }
 
-                        if (pie.getClickedBlock().getLocation().distance(p.getLocation()) < 2) {
+                        if (event.getClickedBlock().getLocation().distance(p.getLocation()) < 2) {
                             Location oldLocation = p.getLocation();
-                            if (oldLocation.getY() >= pie.getClickedBlock().getLocation().getY()) {
+                            if (oldLocation.getY() >= event.getClickedBlock().getLocation().getY()) {
                                 oldLocation.setY(oldLocation.getY() + 2);
                             } else {
                                 oldLocation.setY(oldLocation.getY() - 2);
@@ -863,9 +863,9 @@ public class PlayerListener extends BaseListener {
 
             if (clickedBlock != null && clickedBlock.getType() == Material.ENDER_CHEST
                     && !g.spectator(player)) {
-                pie.setCancelled(true);
+                event.setCancelled(true);
 
-                Block chest = pie.getClickedBlock();
+                Block chest = event.getClickedBlock();
                 Team chestTeam = g.getTeamOfEnderChest(chest);
                 Team playerTeam = g.getPlayerTeam(player);
 
@@ -880,39 +880,37 @@ public class PlayerListener extends BaseListener {
                             ChatHelper.with(ChatColor.RED + Main.local("ingame.noturteamchest")));
                 }
 
-                return;
             }
 
-            return;
         } else if (g.getState() == GameState.WAITING) {
             if (interactingMaterial == null) {
-                pie.setCancelled(true);
+                event.setCancelled(true);
                 return;
             }
 
-            if (pie.getAction() == Action.PHYSICAL) {
+            if (event.getAction() == Action.PHYSICAL) {
                 if (clickedBlock != null && (clickedBlock.getType() == Material.WHEAT
                         || clickedBlock.getType() == Material.SOIL)) {
-                    pie.setCancelled(true);
+                    event.setCancelled(true);
                     return;
                 }
             }
 
-            if (pie.getAction() != Action.RIGHT_CLICK_BLOCK
-                    && pie.getAction() != Action.RIGHT_CLICK_AIR) {
+            if (event.getAction() != Action.RIGHT_CLICK_BLOCK
+                    && event.getAction() != Action.RIGHT_CLICK_AIR) {
                 return;
             }
 
             switch (interactingMaterial) {
                 case BED:
-                    pie.setCancelled(true);
+                    event.setCancelled(true);
                     if (!g.isAutobalanceEnabled()) {
                         g.getPlayerStorage(player).openTeamSelection(g);
                     }
 
                     break;
                 case DIAMOND:
-                    pie.setCancelled(true);
+                    event.setCancelled(true);
                     if (player.isOp() || player.hasPermission("bw.setup")) {
                         g.start(player);
                     } else if (player.hasPermission("bw.vip.forcestart")) {
@@ -930,7 +928,7 @@ public class PlayerListener extends BaseListener {
                     }
                     break;
                 case EMERALD:
-                    pie.setCancelled(true);
+                    event.setCancelled(true);
                     if ((player.isOp() || player.hasPermission("bw.setup")
                             || player.hasPermission("bw.vip.reducecountdown"))
                             && g.getGameLobbyCountdown().getCounter() > g.getGameLobbyCountdown()
@@ -939,11 +937,11 @@ public class PlayerListener extends BaseListener {
                     }
                     break;
                 case SLIME_BALL:
-                    pie.setCancelled(true);
+                    event.setCancelled(true);
                     g.playerLeave(player, false);
                     break;
                 case LEATHER_CHESTPLATE:
-                    pie.setCancelled(true);
+                    event.setCancelled(true);
                     player.updateInventory();
                     break;
                 default:

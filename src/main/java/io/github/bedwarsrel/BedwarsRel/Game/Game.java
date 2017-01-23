@@ -768,7 +768,9 @@ public class Game {
         this.getPlayerSettings(p).setTeleporting(true);
         Team team = this.getPlayerTeam(p);
 
-        team.removeEnsure(p);
+        if (!nil(team)) {
+            team.removeEnsure(p);
+        }
 
         BedwarsPlayerLeaveEvent leaveEvent = new BedwarsPlayerLeaveEvent(this, p, team);
         Main.getInstance().getServer().getPluginManager().callEvent(leaveEvent);
