@@ -77,7 +77,7 @@ public class TrapListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onBreak(BlockBreakEvent br) {
         if (br.isCancelled()) {
             return;
