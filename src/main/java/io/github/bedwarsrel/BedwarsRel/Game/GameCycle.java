@@ -2,7 +2,6 @@ package io.github.bedwarsrel.BedwarsRel.Game;
 
 import com.google.common.collect.ImmutableMap;
 import io.github.bedwarsrel.BedwarsRel.Events.BedwarsGameOverEvent;
-import io.github.bedwarsrel.BedwarsRel.Events.BedwarsPlayerKilledEvent;
 import io.github.bedwarsrel.BedwarsRel.Main;
 import io.github.bedwarsrel.BedwarsRel.Shop.Specials.RescuePlatform;
 import io.github.bedwarsrel.BedwarsRel.Shop.Specials.SpecialItem;
@@ -314,58 +313,54 @@ public abstract class GameCycle {
             return;
         }
 
-        BedwarsPlayerKilledEvent killedEvent =
-                new BedwarsPlayerKilledEvent(this.getGame(), player, killer);
-        Main.getInstance().getServer().getPluginManager().callEvent(killedEvent);
-
-        PlayerStatistic die;
-        PlayerStatistic kil;
-
-        Iterator<SpecialItem> itemIterator = this.game.getSpecialItems().iterator();
-        while (itemIterator.hasNext()) {
-            SpecialItem item = itemIterator.next();
-            if (!(item instanceof RescuePlatform)) {
-                continue;
-            }
-
-            RescuePlatform rescue = (RescuePlatform) item;
-            if (rescue.getOwner().equals(player)) {
-                itemIterator.remove();
+        Iterator<SpecialItem> itr = this.game.getSpecialItems().iterator();
+        while (itr.hasNext()) {
+            SpecialItem item = itr.next();
+            if (item instanceof RescuePlatform) {
+                RescuePlatform r = (RescuePlatform) item;
+                if (r.getOwner().equals(player)) {
+                    itr.remove();
+                }
             }
         }
 
         Team deathTeam = this.getGame().getPlayerTeam(player);
         if (Main.getInstance().statisticsEnabled()) {
-            die = Main.getInstance().getPlayerStatisticManager().getStatistic(player);
+            Main.log(Timing.timing("statistic", () -> {
+                PlayerStatistic die;
+                PlayerStatistic kil;
 
-            boolean onlyOnBedDestroy =
-                    Main.getInstance().getBooleanConfig("statistics.bed-destroyed-kills", false);
-            boolean teamIsDead = deathTeam.isDead(this.getGame());
+                die = Main.getInstance().getPlayerStatisticManager().getStatistic(player);
 
-            if (!onlyOnBedDestroy || teamIsDead) {
-                die.setDeaths(die.getDeaths() + 1);
-                die.addCurrentScore(Main.getInstance().getIntConfig("statistics.scores.die", 0));
-            }
+                boolean onlyOnBedDestroy =
+                        Main.getInstance().getBooleanConfig("statistics.bed-destroyed-kills", false);
+                boolean teamIsDead = deathTeam.isDead(this.getGame());
 
-            if (killer != null) {
                 if (!onlyOnBedDestroy || teamIsDead) {
-                    kil = Main.getInstance().getPlayerStatisticManager().getStatistic(killer);
-                    if (kil != null) {
-                        kil.setKills(kil.getKills() + 1);
-                        kil
-                                .addCurrentScore(Main.getInstance().getIntConfig("statistics.scores.kill", 10));
+                    die.setDeaths(die.getDeaths() + 1);
+                    die.addCurrentScore(Main.getInstance().getIntConfig("statistics.scores.die", 0));
+                }
+
+                if (killer != null) {
+                    if (!onlyOnBedDestroy || teamIsDead) {
+                        kil = Main.getInstance().getPlayerStatisticManager().getStatistic(killer);
+                        if (kil != null) {
+                            kil.setKills(kil.getKills() + 1);
+                            kil
+                                    .addCurrentScore(Main.getInstance().getIntConfig("statistics.scores.kill", 10));
+                        }
                     }
                 }
-            }
 
-            // dispatch reward commands directly
-            if (Main.getInstance().getBooleanConfig("rewards.enabled", false) && killer != null
-                    && (!onlyOnBedDestroy || teamIsDead)) {
-                List<String> commands = Main.getInstance().getConfig().getStringList("rewards.player-kill");
-                Main.getInstance().dispatchRewardCommands(commands,
-                        ImmutableMap.of("{player}", killer.getName(), "{score}",
-                                String.valueOf(Main.getInstance().getIntConfig("statistics.scores.kill", 10))));
-            }
+                // dispatch reward commands directly
+                if (Main.getInstance().getBooleanConfig("rewards.enabled", false) && killer != null
+                        && (!onlyOnBedDestroy || teamIsDead)) {
+                    List<String> commands = Main.getInstance().getConfig().getStringList("rewards.player-kill");
+                    Main.getInstance().dispatchRewardCommands(commands,
+                            ImmutableMap.of("{player}", killer.getName(), "{score}",
+                                    String.valueOf(Main.getInstance().getIntConfig("statistics.scores.kill", 10))));
+                }
+            }));
         }
 
         if (killer == null) {
