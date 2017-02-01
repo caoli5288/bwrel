@@ -577,12 +577,6 @@ bungeecord:
   # Full restart(shutdown) after given game-cycle count
   full-restart: 1
 
- # Use spigot restart
- # type: boolean
- # If true, it tries to use spigot's /restart command (ONLY WHEN full-restart IS true)
- # If spigot isn't running, it will just stop the server
-  spigot-restart: true
-
  # Message of the Day configuration
  # Type: string (colorcodes with &)
  # Here you can specify the MOTDs which should be used

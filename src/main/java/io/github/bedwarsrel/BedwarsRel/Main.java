@@ -841,8 +841,12 @@ public class Main extends JavaPlugin {
         instance.getLogger().log(Level.SEVERE, line, e);
     }
 
-    public static String getStr(String path, String def) {
+    public static String getUTF8(String path, String def) {
         return instance.getConfig().getString(path, def).replace('&', '§');
+    }
+
+    public static boolean getBool(String path, boolean def) {
+        return instance.getConfig().getBoolean(path, def);
     }
 
 }

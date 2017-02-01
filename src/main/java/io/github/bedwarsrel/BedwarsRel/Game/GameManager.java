@@ -400,7 +400,7 @@ public class GameManager {
     }
 
     public static void reload() {
-        Main.getInstance().getGameManager().reloadGames();
+        Hold.MANAGER.reloadGames();
     }
 
     public static boolean spectator(Player p) {

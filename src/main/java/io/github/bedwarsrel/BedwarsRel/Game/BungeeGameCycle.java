@@ -51,21 +51,30 @@ public class BungeeGameCycle extends GameCycle {
     @Override
     public void onGameEnds() {
         if (count < Main.getInstance().getIntConfig("bungeecord.full-restart", 1)) {
-            GameManager.reload();
-        } else {
-            kickAll();
-            if (!Main.getInstance().getBooleanConfig("reset-by-reload", false)) {
+            if (Main.getBool("reset-by-reload", false)) {
+                GameManager.reload();
+            } else {
+                getGame().resetScoreboard();
+                kickAll();
+                setEndGameRunning(false);
+                for (Team team : getGame().getTeams().values()) {
+                    team.setInventory(null);
+                    team.getChests().clear();
+                }
+
+                getGame().clearProtections();
+
+                getGame().setState(GameState.WAITING);
+                getGame().updateScoreboard();
+
                 getGame().resetRegion();
             }
-            Main.run(() -> {
-                if (Main.getInstance().isSpigot()
-                        && Main.getInstance().getBooleanConfig("bungeecord.spigot-restart", true)) {
-                    Main.getInstance().getServer()
-                            .dispatchCommand(Main.getInstance().getServer().getConsoleSender(), "restart");
-                } else {
-                    Bukkit.shutdown();
-                }
-            }, 65);
+        } else {
+            kickAll();
+            if (!Main.getBool("reset-by-reload", false)) {
+                getGame().resetRegion();
+            }
+            Main.run(Bukkit::shutdown, 65);
         }
     }
 
