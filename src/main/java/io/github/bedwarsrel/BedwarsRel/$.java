@@ -4,6 +4,9 @@ import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import java.util.Collection;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 /**
  * Created on 16-12-15.
@@ -44,6 +47,10 @@ public final class $ {
 
     public static long now() {
         return System.currentTimeMillis();
+    }
+
+    public static <T> Stream<T> filter(Collection<T> l, Predicate<T> p) {
+        return l.stream().filter(p);
     }
 
 }

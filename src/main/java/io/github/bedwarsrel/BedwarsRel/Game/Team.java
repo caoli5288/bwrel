@@ -171,11 +171,18 @@ public class Team implements ConfigurationSerializable {
         }
     }
 
+    public void reset() {
+        inventory = null;
+        ensure = null;
+        over = false;
+        chests.clear();
+    }
+
     public List<Player> getPlayers() {
         if ($.nil(ensure)) {
             return getAllRT();
         }
-        return ensure.stream().filter(p -> !GameManager.spectator(p)).collect(toList());
+        return $.filter(ensure, p -> !GameManager.spectator(p)).collect(toList());
     }
 
     private List<Player> getAllRT() {

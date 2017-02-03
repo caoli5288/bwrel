@@ -1142,6 +1142,7 @@ public class Game {
         } else {
             region.reset(this);
         }
+
     }
 
     private String formatScoreboardTitle() {

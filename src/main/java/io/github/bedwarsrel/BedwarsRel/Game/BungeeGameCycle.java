@@ -58,8 +58,7 @@ public class BungeeGameCycle extends GameCycle {
                 kickAll();
                 setEndGameRunning(false);
                 for (Team team : getGame().getTeams().values()) {
-                    team.setInventory(null);
-                    team.getChests().clear();
+                    team.reset();
                 }
 
                 getGame().clearProtections();
