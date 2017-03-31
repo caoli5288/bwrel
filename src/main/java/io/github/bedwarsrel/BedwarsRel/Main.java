@@ -3,6 +3,7 @@ package io.github.bedwarsrel.BedwarsRel;
 import com.google.common.collect.ImmutableMap;
 import com.mengcraft.nick.Nick;
 import com.mengcraft.nick.NickManager;
+import com.mengcraft.nick.NickPlugin;
 import io.github.bedwarsrel.BedwarsRel.Commands.AddGameCommand;
 import io.github.bedwarsrel.BedwarsRel.Commands.AddHoloCommand;
 import io.github.bedwarsrel.BedwarsRel.Commands.AddTeamCommand;
@@ -85,6 +86,8 @@ import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+
+import static io.github.bedwarsrel.BedwarsRel.$.nil;
 
 public class Main extends JavaPlugin {
 
@@ -190,10 +193,10 @@ public class Main extends JavaPlugin {
 
         Plugin get = getServer().getPluginManager().getPlugin("Nick");
         if (get != null) {
-            NickManager manager = NickManager.class.cast(get);
+            NickManager manager = NickPlugin.getNickManager();
             gameManager.setNick((p, team) -> {
                 Nick nick = manager.get(p);
-                if (nick != null) {
+                if (!nil(nick) && !nil(nick.getNick())) {
                     nick.setColor(team.getChatColor().toString());
                     manager.set(p, nick, true);
                 }
@@ -244,7 +247,7 @@ public class Main extends JavaPlugin {
         }
 
         // load breakable materials
-        this.breakableTypes = new ArrayList<Material>();
+        this.breakableTypes = new ArrayList<>();
         for (String material : this.getConfig().getStringList("breakable-blocks.list")) {
             if (material.equalsIgnoreCase("none")) {
                 continue;
