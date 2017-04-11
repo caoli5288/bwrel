@@ -511,7 +511,7 @@ public class Main extends JavaPlugin {
         return null;
     }
 
-    public static void run(Runnable r, int delay) {
+    public static void run(int delay, Runnable r) {
         instance.getServer().getScheduler().runTaskLater(instance, r, delay);
     }
 

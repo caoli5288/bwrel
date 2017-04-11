@@ -4,21 +4,17 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import io.github.bedwarsrel.BedwarsRel.ChatHelper;
-import io.github.bedwarsrel.BedwarsRel.Events.BedwarsGameEndEvent;
+import io.github.bedwarsrel.BedwarsRel.Events.BWGameEndEvent;
 import io.github.bedwarsrel.BedwarsRel.Main;
 import io.github.bedwarsrel.BedwarsRel.Utils;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 public class BungeeGameCycle extends GameCycle {
@@ -49,7 +45,7 @@ public class BungeeGameCycle extends GameCycle {
     }
 
     @Override
-    public void onGameEnds() {
+    public void onGameEnd() {
         if (count < Main.getInstance().getIntConfig("bungeecord.full-restart", 1)) {
             if (Main.getBool("reset-by-reload", false)) {
                 GameManager.reload();
@@ -73,7 +69,7 @@ public class BungeeGameCycle extends GameCycle {
             if (!Main.getBool("reset-by-reload", false)) {
                 getGame().resetRegion();
             }
-            Main.run(Bukkit::shutdown, 65);
+            Main.run(65, Bukkit::shutdown);
         }
     }
 
@@ -217,61 +213,35 @@ public class BungeeGameCycle extends GameCycle {
 
     @Override
     public void onGameOver(GameOverTask task) {
-        if (Main.getInstance().getBooleanConfig("bungeecord.endgame-in-lobby", true)) {
-            final ArrayList<Player> players = new ArrayList<Player>();
-            final Game game = this.getGame();
-            players.addAll(this.getGame().getTeamPlayers());
-            players.addAll(this.getGame().getFree());
-            for (Player player : players) {
-
-                if (!player.getWorld().equals(this.getGame().getLobby().getWorld())) {
-                    game.getPlayerSettings(player).setTeleporting(true);
-                    player.teleport(this.getGame().getLobby());
-                    game.getPlayerStorage(player).clean();
-                }
-            }
-
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    for (Player player : players) {
-                        game.setPlayerGameMode(player);
-                        game.setPlayerVisibility(player);
-
-                        if (!player.getInventory().contains(Material.SLIME_BALL)) {
-                            // Leave Game (Slimeball)
-                            ItemStack leaveGame = new ItemStack(Material.SLIME_BALL, 1);
-                            ItemMeta im = leaveGame.getItemMeta();
-                            im.setDisplayName(Main.local("lobby.leavegame"));
-                            leaveGame.setItemMeta(im);
-                            player.getInventory().setItem(8, leaveGame);
-                            player.updateInventory();
-                        }
-                    }
-                }
-            }.runTaskLater(Main.getInstance(), 20L);
-        }
-        if (task.getCounter() == task.getStartCount() && task.getWinner() != null) {
+        int count = task.getCounter();
+        if (count == task.getStartCount() && task.getWinner() != null) {
             this.getGame().broadcast(ChatColor.GOLD + Main.local("ingame.teamwon",
                     ImmutableMap.of("team", task.getWinner().getDisplayName() + ChatColor.GOLD)));
-        } else if (task.getCounter() == task.getStartCount() && task.getWinner() == null) {
+        } else if (count == task.getStartCount() && task.getWinner() == null) {
             this.getGame().broadcast(ChatColor.GOLD + Main.local("ingame.draw"));
         }
 
-        // game over
-        if (task.getCounter() == 0) {
-            BedwarsGameEndEvent endEvent = new BedwarsGameEndEvent(this.getGame());
-            Main.getInstance().getServer().getPluginManager().callEvent(endEvent);
-
-            this.onGameEnds();
-            task.cancel();
-        } else if ((task.getCounter() == task.getStartCount()) || (task.getCounter() % 10 == 0)
-                || (task.getCounter() <= 5 && (task.getCounter() > 0))) {
-            this.getGame().broadcast(ChatColor.AQUA + Main.local("ingame.serverrestart", ImmutableMap
-                    .of("sec", ChatColor.YELLOW.toString() + task.getCounter() + ChatColor.AQUA)));
+        if (count == 2) {
+            String label = Main.getUTF8("player-command-on-end", "");
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                p.performCommand(label.replace("%player%", p.getName()));
+            }
         }
 
-        task.decCounter();
+        // game over
+        if (count == 0) {
+            BWGameEndEvent endEvent = new BWGameEndEvent(getGame());
+            Main.getInstance().getServer().getPluginManager().callEvent(endEvent);
+
+            onGameEnd();
+            task.cancel();
+        } else if ((count == task.getStartCount()) || (count % 10 == 0)
+                || (count <= 5 && (count > 0))) {
+            this.getGame().broadcast(ChatColor.AQUA + Main.local("ingame.serverrestart", ImmutableMap
+                    .of("sec", ChatColor.YELLOW.toString() + count + ChatColor.AQUA)));
+        }
+
+        task.countdown();
     }
 
 }

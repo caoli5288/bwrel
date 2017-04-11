@@ -40,6 +40,8 @@ send-error-data: true
 # in global chat
 global-messages: true
 
+player-command-on-end: say %player%
+
 # Global autobalance
 # type: boolean
 # Enables autobalancing in every game

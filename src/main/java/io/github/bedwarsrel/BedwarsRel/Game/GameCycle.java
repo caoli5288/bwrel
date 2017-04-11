@@ -9,12 +9,17 @@ import io.github.bedwarsrel.BedwarsRel.Statistics.PlayerStatistic;
 import io.github.bedwarsrel.BedwarsRel.Timing;
 import io.github.bedwarsrel.BedwarsRel.Utils;
 import lombok.Setter;
+import lombok.val;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.lang.reflect.Method;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -38,7 +43,7 @@ public abstract class GameCycle {
 
     public abstract void onGameStart();
 
-    public abstract void onGameEnds();
+    public abstract void onGameEnd();
 
     public abstract void onPlayerLeave(Player player);
 
@@ -210,6 +215,35 @@ public abstract class GameCycle {
 
         GameOverTask gameOver = new GameOverTask(this, delay, winner);
         gameOver.runTaskTimer(Main.getInstance(), 0L, 20L);
+
+        if (Main.getInstance().getBooleanConfig("bungeecord.endgame-in-lobby", true)) {
+            val all = new ArrayList<Player>();
+            val game = this.getGame();
+            all.addAll(this.getGame().getTeamPlayers());
+            all.addAll(this.getGame().getFree());
+            for (Player player : all) {
+                if (!player.getWorld().equals(getGame().getLobby().getWorld())) {
+                    game.getPlayerSettings(player).setTeleporting(true);
+                    player.teleport(this.getGame().getLobby());
+                    game.getPlayerStorage(player).clean();
+                }
+            }
+
+            Main.run(20, () -> {
+                for (Player player : all) {
+                    game.setPlayerGameMode(player);
+                    game.setPlayerVisibility(player);
+                    if (!player.getInventory().contains(Material.SLIME_BALL)) {
+                        ItemStack leaveGame = new ItemStack(Material.SLIME_BALL, 1);
+                        ItemMeta im = leaveGame.getItemMeta();
+                        im.setDisplayName(Main.local("lobby.leavegame"));
+                        leaveGame.setItemMeta(im);
+                        player.getInventory().setItem(8, leaveGame);
+                        player.updateInventory();
+                    }
+                }
+            });
+        }
     }
 
     private Map<String, String> getRewardPlaceholders(Player player) {
@@ -305,7 +339,7 @@ public abstract class GameCycle {
             event.setRespawnLocation(team.getSpawnLocation());
         }
 
-        Main.run(this::checkGameOver, 20);
+        Main.run(20, this::checkGameOver);
     }
 
     public void onPlayerDies(Player player, Player killer) {

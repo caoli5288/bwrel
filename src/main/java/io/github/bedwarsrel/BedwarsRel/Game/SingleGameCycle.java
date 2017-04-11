@@ -2,7 +2,7 @@ package io.github.bedwarsrel.BedwarsRel.Game;
 
 import com.google.common.collect.ImmutableMap;
 import io.github.bedwarsrel.BedwarsRel.ChatHelper;
-import io.github.bedwarsrel.BedwarsRel.Events.BedwarsGameEndEvent;
+import io.github.bedwarsrel.BedwarsRel.Events.BWGameEndEvent;
 import io.github.bedwarsrel.BedwarsRel.Main;
 import io.github.bedwarsrel.BedwarsRel.Statistics.PlayerStatistic;
 import io.github.bedwarsrel.BedwarsRel.Utils;
@@ -24,7 +24,7 @@ public class SingleGameCycle extends GameCycle {
     }
 
     @Override
-    public void onGameEnds() {
+    public void onGameEnd() {
         // Reset scoreboard first
         this.getGame().resetScoreboard();
 
@@ -198,17 +198,17 @@ public class SingleGameCycle extends GameCycle {
         }
 
         if (task.getCounter() == 0) {
-            BedwarsGameEndEvent endEvent = new BedwarsGameEndEvent(this.getGame());
+            BWGameEndEvent endEvent = new BWGameEndEvent(this.getGame());
             Main.getInstance().getServer().getPluginManager().callEvent(endEvent);
 
-            this.onGameEnds();
+            this.onGameEnd();
             task.cancel();
         } else {
             this.getGame().broadcast(ChatColor.AQUA + Main.local("ingame.backtolobby", ImmutableMap.of("sec",
                     ChatColor.YELLOW.toString() + task.getCounter() + ChatColor.AQUA)));
         }
 
-        task.decCounter();
+        task.countdown();
     }
 
 }

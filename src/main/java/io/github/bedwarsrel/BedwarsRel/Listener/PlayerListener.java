@@ -94,12 +94,12 @@ public class PlayerListener extends BaseListener {
             }
 
             if (!firstGame.playerJoins(player)) {
-                Main.run(() -> {
+                Main.run(5, () -> {
                     if (firstGame.getCycle() instanceof BungeeGameCycle) {
                         ((BungeeGameCycle) firstGame.getCycle())
                                 .bungeeSendToServer(Main.getInstance().getBungeeHub(), player, true);
                     }
-                }, 5);
+                });
             }
 
         } else {
@@ -323,7 +323,7 @@ public class PlayerListener extends BaseListener {
                     BukkitRunnable r = (BukkitRunnable) spawn.getDeclaredConstructor(Player.class).newInstance(p);
                     r.runTaskLater(Main.getInstance(), 40);
                 } else {
-                    Main.run(() -> p.spigot().respawn(), 40);
+                    Main.run(40, () -> p.spigot().respawn());
                 }
 
             } catch (Exception e) {

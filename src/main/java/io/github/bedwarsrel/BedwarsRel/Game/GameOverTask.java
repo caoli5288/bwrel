@@ -37,7 +37,7 @@ public class GameOverTask extends BukkitRunnable {
         this.counter = counter;
     }
 
-    public void decCounter() {
+    public void countdown() {
         this.counter--;
     }
 
