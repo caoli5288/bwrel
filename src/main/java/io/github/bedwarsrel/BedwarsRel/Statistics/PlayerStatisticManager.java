@@ -236,7 +236,9 @@ public class PlayerStatisticManager {
         if (Main.getInstance().getStatisticStorageType() == StorageType.YAML) {
             loadYamlStatistic(statistic);
         } else {
-            Main.execute(() -> loadDatabaseStatistic(statistic));
+            Main.execute(50, () -> {
+                if (statistic.getPlayer().isOnline()) loadDatabaseStatistic(statistic);
+            });
         }
     }
 

@@ -210,6 +210,10 @@ public class Main extends JavaPlugin {
         instance.pool.execute(runnable);
     }
 
+    public static void execute(int delay, Runnable runnable) {
+        run(delay, () -> execute(runnable));
+    }
+
     @Override
     public void onDisable() {
         pool.shutdown();
