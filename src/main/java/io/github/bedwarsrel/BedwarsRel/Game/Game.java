@@ -452,6 +452,15 @@ public class Game {
         return this.getPlayers().size();
     }
 
+    public boolean isNearbySpawn(Location loc) {
+        for (Team t : team.values()) {
+            if (t.getSpawnLocation().distanceSquared(loc) < 2) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean isFull() {
         return (this.getMaxPlayers() <= this.getPlayerAmount());
     }

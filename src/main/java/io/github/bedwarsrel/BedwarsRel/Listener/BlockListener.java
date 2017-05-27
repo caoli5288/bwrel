@@ -328,8 +328,8 @@ public class BlockListener extends BaseListener {
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
-    public void onPlace(BlockPlaceEvent bpe) {
-        Player player = bpe.getPlayer();
+    public void onPlace(BlockPlaceEvent event) {
+        Player player = event.getPlayer();
         Game game = Main.getInstance().getGameManager().getGameOfPlayer(player);
 
         if (game == null) {
@@ -341,30 +341,37 @@ public class BlockListener extends BaseListener {
         }
 
         if (game.getState() == GameState.WAITING) {
-            bpe.setCancelled(true);
-            bpe.setBuild(false);
+            event.setCancelled(true);
+            event.setBuild(false);
             return;
         }
 
         if (game.getState() == GameState.RUNNING) {
             if (game.spectator(player)) {
-                bpe.setCancelled(true);
-                bpe.setBuild(false);
+                event.setCancelled(true);
+                event.setBuild(false);
                 return;
             }
 
-            Block placeBlock = bpe.getBlockPlaced();
-            BlockState replacedBlock = bpe.getBlockReplacedState();
+            Block placeBlock = event.getBlockPlaced();
+            if (game.isNearbySpawn(placeBlock.getLocation())) {
+                event.setCancelled(true);
+                event.setBuild(false);
+                return;
+            }
+
+
+            BlockState replacedBlock = event.getBlockReplacedState();
 
             if (placeBlock.getType() == game.getTargetMaterial()) {
-                bpe.setCancelled(true);
-                bpe.setBuild(false);
+                event.setCancelled(true);
+                event.setBuild(false);
                 return;
             }
 
             if (!game.getRegion().isInRegion(placeBlock.getLocation())) {
-                bpe.setCancelled(true);
-                bpe.setBuild(false);
+                event.setCancelled(true);
+                event.setBuild(false);
                 return;
             }
 
@@ -373,8 +380,8 @@ public class BlockListener extends BaseListener {
                     || replacedBlock.getType().equals(Material.STATIONARY_WATER)
                     || replacedBlock.getType().equals(Material.LAVA)
                     || replacedBlock.getType().equals(Material.STATIONARY_LAVA))) {
-                bpe.setCancelled(true);
-                bpe.setBuild(false);
+                event.setCancelled(true);
+                event.setBuild(false);
                 return;
             }
 
@@ -387,7 +394,7 @@ public class BlockListener extends BaseListener {
                 playerTeam.addChest(placeBlock);
             }
 
-            if (!bpe.isCancelled()) {
+            if (!event.isCancelled()) {
                 game.getRegion().addPlacedBlock(placeBlock,
                         (replacedBlock.getType().equals(Material.AIR) ? null : replacedBlock));
             }
