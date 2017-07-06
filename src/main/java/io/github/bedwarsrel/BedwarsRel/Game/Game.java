@@ -16,6 +16,7 @@ import io.github.bedwarsrel.BedwarsRel.Utils;
 import io.github.bedwarsrel.BedwarsRel.Villager.MerchantCategory;
 import io.github.bedwarsrel.BedwarsRel.Villager.MerchantCategoryComparator;
 import lombok.Data;
+import lombok.val;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
@@ -453,8 +454,13 @@ public class Game {
     }
 
     public boolean isNearbySpawn(Location loc) {
-        for (Team t : team.values()) {
-            if (t.getSpawnLocation().distanceSquared(loc) < 2) {
+        return isNearbySpawn(loc.getX(), loc.getZ());
+    }
+
+    public boolean isNearbySpawn(double x, double z) {
+        for (val t : team.values()) {
+            val b = t.getSpawnLocation().getBlock();
+            if (Math.abs(x - b.getX()) <= 1 && Math.abs(z - b.getZ()) <= 1) {
                 return true;
             }
         }
