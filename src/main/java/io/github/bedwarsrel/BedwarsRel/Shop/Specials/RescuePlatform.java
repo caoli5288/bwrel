@@ -83,17 +83,17 @@ public class RescuePlatform extends SpecialItem {
             }
         }
 
-        if (player.getLocation().getBlock().getRelative(BlockFace.DOWN).getType() != Material.AIR) {
+        if (player.getLocation().getBlock().getRelative(BlockFace.DOWN).getRelative(BlockFace.DOWN).getType() != Material.AIR) {
             player.sendMessage(ChatHelper.with(ChatColor.RED + Main.local("errors.notinair")));
             return;
         }
 
         Location mid = player.getLocation().clone();
-        mid.setY(mid.getY() - 1.0D);
+        mid.setY(mid.getY() - 2);
 
         Team team = game.getPlayerTeam(player);
 
-        ItemStack usedStack = null;
+        ItemStack usedStack;
 
         if (Main.getInstance().getCurrentVersion().startsWith("v1_8")) {
             usedStack = player.getInventory().getItemInHand();
@@ -148,7 +148,7 @@ public class RescuePlatform extends SpecialItem {
 
             @Override
             public void run() {
-                RescuePlatform.this.livingTime++;
+                livingTime++;
 
                 if (breakTime > 0 && RescuePlatform.this.livingTime == breakTime) {
                     for (Block block : RescuePlatform.this.platformBlocks) {
@@ -158,13 +158,12 @@ public class RescuePlatform extends SpecialItem {
                     }
                 }
 
-                if (RescuePlatform.this.livingTime >= waitTime
-                        && RescuePlatform.this.livingTime >= breakTime) {
-                    RescuePlatform.this.game.removeRunningTask(this);
-                    RescuePlatform.this.game.removeSpecialItem(RescuePlatform.this);
-                    RescuePlatform.this.task = null;
-                    this.cancel();
-                    return;
+                if (livingTime >= waitTime
+                        && livingTime >= breakTime) {
+                    game.removeRunningTask(this);
+                    game.removeSpecialItem(RescuePlatform.this);
+                    task = null;
+                    cancel();
                 }
             }
         }.runTaskTimer(Main.getInstance(), 20L, 20L);
@@ -172,7 +171,7 @@ public class RescuePlatform extends SpecialItem {
     }
 
     private ArrayList<RescuePlatform> getLivingPlatforms() {
-        ArrayList<RescuePlatform> livingPlatforms = new ArrayList<RescuePlatform>();
+        ArrayList<RescuePlatform> livingPlatforms = new ArrayList<>();
         for (SpecialItem item : game.getSpecialItems()) {
             if (item instanceof RescuePlatform) {
                 RescuePlatform rescuePlatform = (RescuePlatform) item;
