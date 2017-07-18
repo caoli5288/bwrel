@@ -6,6 +6,7 @@ import io.github.bedwarsrel.BedwarsRel.Game.Game;
 import io.github.bedwarsrel.BedwarsRel.Game.Team;
 import io.github.bedwarsrel.BedwarsRel.Main;
 import io.github.bedwarsrel.BedwarsRel.Utils;
+import lombok.val;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -83,7 +84,8 @@ public class RescuePlatform extends SpecialItem {
             }
         }
 
-        if (player.getLocation().getBlock().getRelative(BlockFace.DOWN).getRelative(BlockFace.DOWN).getType() != Material.AIR) {
+        val foot = player.getLocation().getBlock().getRelative(BlockFace.DOWN);
+        if (!(foot.getType() == Material.AIR && foot.getRelative(BlockFace.DOWN).getType() == Material.AIR)) {
             player.sendMessage(ChatHelper.with(ChatColor.RED + Main.local("errors.notinair")));
             return;
         }
