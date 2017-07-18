@@ -684,7 +684,10 @@ rewards:
   # set the first command to "none", no commands will be executed
   player-win:
     - /example {player} 200
-  
+
+  player-loss:
+    - none
+
   # Game end (every player in game)
   # type: List<string>
   # Commands which will be execute for every player in game

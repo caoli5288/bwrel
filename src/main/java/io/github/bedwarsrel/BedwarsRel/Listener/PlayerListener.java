@@ -1004,11 +1004,11 @@ public class PlayerListener extends BaseListener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onQuit(PlayerQuitEvent pqe) {
-        Player player = pqe.getPlayer();
+    public void onQuit(PlayerQuitEvent event) {
+        Player player = event.getPlayer();
 
         if (Main.getInstance().isBungee()) {
-            pqe.setQuitMessage(null);
+            event.setQuitMessage(null);
         }
 
         // Remove holographs

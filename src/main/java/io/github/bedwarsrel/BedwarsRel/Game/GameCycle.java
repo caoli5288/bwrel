@@ -1,5 +1,6 @@
 package io.github.bedwarsrel.BedwarsRel.Game;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.github.bedwarsrel.BedwarsRel.Events.BedwarsGameOverEvent;
 import io.github.bedwarsrel.BedwarsRel.Main;
@@ -135,12 +136,19 @@ public abstract class GameCycle {
         String title = this.winTitleReplace(Main.local("ingame.title.win-title"), winner);
         String subtitle = this.winTitleReplace(Main.local("ingame.title.win-subtitle"), winner);
 
+        boolean reward = Main.getInstance().getBooleanConfig("rewards.enabled", false);
+        List<Player> win = ImmutableList.of();
+
         if (Main.getInstance().statisticsEnabled()
-                || Main.getInstance().getBooleanConfig("rewards.enabled", false)
+                || reward
                 || (Main.getInstance().getBooleanConfig("titles.win.enabled", true)
                 && (!"".equals(title) || !"".equals(subtitle)))) {
             if (winner != null) {
-                for (Player player : winner.getEnsure()) {
+                val list = Main.getInstance().getConfig().getStringList("rewards.player-win");
+
+                win = winner.getEnsure();
+
+                for (Player player : win) {
                     if (Main.getInstance().getBooleanConfig("titles.win.enabled", true)
                             && (!"".equals(title) || !"".equals(subtitle))) {
                         try {
@@ -179,9 +187,7 @@ public abstract class GameCycle {
                         }
                     }
 
-                    if (Main.getInstance().getBooleanConfig("rewards.enabled", false)) {
-                        List<String> list;
-                        list = Main.getInstance().getConfig().getStringList("rewards.player-win");
+                    if (reward) {
                         Main.getInstance().dispatchRewardCommands(list, this.getRewardPlaceholders(player));
                     }
 
@@ -199,12 +205,15 @@ public abstract class GameCycle {
                 }
             }
 
-            if (Main.getInstance().getBooleanConfig("rewards.enabled", false)) {
-                List<String> list;
-                list = Main.getInstance().getConfig().getStringList("rewards.player-end-game");
+            if (reward) {
+                val list = Main.getInstance().getConfig().getStringList("rewards.player-end-game");
+                val l = Main.getInstance().getConfig().getStringList("rewards.player-loss");
                 for (Team t : game.getTeams().values()) {
-                    for (Player player : t.getEnsure()) {
-                        Main.getInstance().dispatchRewardCommands(list, this.getRewardPlaceholders(player));
+                    for (Player p : t.getEnsure()) {
+                        Main.getInstance().dispatchRewardCommands(list, this.getRewardPlaceholders(p));
+                        if (!win.contains(p)) {
+                            Main.getInstance().dispatchRewardCommands(l, this.getRewardPlaceholders(p));
+                        }
                     }
                 }
             }
@@ -246,7 +255,7 @@ public abstract class GameCycle {
         }
     }
 
-    private Map<String, String> getRewardPlaceholders(Player player) {
+    Map<String, String> getRewardPlaceholders(Player player) {
         Map<String, String> placeholders = new HashMap<>();
 
         placeholders.put("{player}", player.getName());

@@ -900,6 +900,12 @@ public class Game {
 
         this.updateSigns();
         this.playerStorages.remove(p);
+
+        if (Main.getInstance().getBooleanConfig("rewards.enabled", false)) {
+            val l = Main.getInstance().getConfig().getStringList("rewards.player-loss");
+            Main.getInstance().dispatchRewardCommands(l, cycle.getRewardPlaceholders(p));
+        }
+
         return true;
     }
 
