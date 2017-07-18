@@ -248,6 +248,10 @@ public class PlayerListener extends BaseListener {
                 return;
             }
 
+            if (!ioe.getInventory().getName().equals("container.chest")) {
+                return;
+            }
+
             ioe.setCancelled(true);
         }
 
