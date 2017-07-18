@@ -1,7 +1,6 @@
 package io.github.bedwarsrel.BedwarsRel.Database;
 
-import com.mchange.v2.c3p0.ComboPooledDataSource;
-import com.mchange.v2.c3p0.DataSources;
+import com.zaxxer.hikari.HikariDataSource;
 import io.github.bedwarsrel.BedwarsRel.ChatHelper;
 import io.github.bedwarsrel.BedwarsRel.Main;
 import org.bukkit.ChatColor;
@@ -18,7 +17,7 @@ public class DatabaseManager {
     private String user = null;
     private String password = null;
     private String database = null;
-    private ComboPooledDataSource dataSource = null;
+    private HikariDataSource dataSource = null;
 
     private static DatabaseManager instance = null;
 
@@ -51,20 +50,18 @@ public class DatabaseManager {
 
     private void initializePooledDataSource(int minPoolSize, int maxPoolSize) {
         try {
-            this.dataSource = new ComboPooledDataSource();
+            dataSource = new HikariDataSource();
 
-            // currently only mysql is supported
-            this.dataSource.setDriverClass("com.mysql.jdbc.Driver");
-            this.dataSource.setJdbcUrl(
+            dataSource.setJdbcUrl(
                     "jdbc:mysql://" + this.host + ":" + String.valueOf(this.port) + "/" + this.database);
 
-            this.dataSource.setUser(this.user);
-            this.dataSource.setPassword(this.password);
+            dataSource.setUsername(this.user);
+            dataSource.setPassword(this.password);
 
             // connection pool configuration
-            this.dataSource.setMaxIdleTime(600);
-            this.dataSource.setMinPoolSize(minPoolSize);
-            this.dataSource.setMaxPoolSize(maxPoolSize);
+            dataSource.setIdleTimeout(600);
+            dataSource.setMinimumIdle(minPoolSize);
+            dataSource.setMaximumPoolSize(maxPoolSize);
         } catch (Exception ex) {
             Main.getInstance().getServer().getConsoleSender().sendMessage(ChatHelper
                     .with(ChatColor.RED + "Couldn't create pooled datasource: " + ex.getMessage()));
@@ -73,7 +70,7 @@ public class DatabaseManager {
 
     public Connection getDataSourceConnection() {
         try {
-            return this.dataSource.getConnection();
+            return dataSource.getConnection();
         } catch (SQLException e) {
             Main.getInstance().getServer().getConsoleSender().sendMessage(ChatHelper
                     .with(ChatColor.RED + "Couldn't get a pooled connection: " + e.getMessage()));
@@ -87,14 +84,8 @@ public class DatabaseManager {
     }
 
     public void cleanUp() {
-        if (this.dataSource != null) {
-            try {
-                this.dataSource.setMinPoolSize(0);
-                this.dataSource.setInitialPoolSize(0);
-                DataSources.destroy(this.dataSource);
-            } catch (SQLException e) {
-                // just shutdown
-            }
+        if (dataSource != null) {
+            dataSource.close();
         }
     }
 
