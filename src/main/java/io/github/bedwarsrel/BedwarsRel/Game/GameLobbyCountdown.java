@@ -43,7 +43,7 @@ public class GameLobbyCountdown extends BukkitRunnable {
         }
 
         if (this.counter > this.lobbytimeWhenFull
-                && this.game.getPlayerAmount() == this.game.getMaxPlayers()) {
+                && this.game.getPlayerAmount() < this.game.getMaxPlayers() - 2) {
             this.counter = this.lobbytimeWhenFull;
             this.game
                     .broadcast(
